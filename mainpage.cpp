@@ -168,6 +168,9 @@ std::string getParseResult(){
         parseOutputContent->setFont(mfont);
 
 
+        disableButton(syntaxAnalysisButton);
+        disableButton(actionGotoButton);
+
         createConnections();
 
 
@@ -182,17 +185,27 @@ std::string getParseResult(){
             //更改文件名称
             this->fileBox->setText(fileName);
             this->fileContent = readFileToString(fileName.toStdString());
+            isFileLoad=1;
         }
     }
 
     void LR1ParserWindow::lexicalAnalyse(){
+
         string output;
         int preline=1,precol=1;
         string fullOutput;
+
+        //如果没有读取文件
+        if(!isFileLoad){
+            fullOutput = string("需要读取文件！！！\n");
+            lexicalOutputContent->setTextColor(QColor::fromString("red"));
+        }
+
         if(lexer.analyze(fileContent,output, preline, precol)==RIGHT_STATUS){
             //重新定义输出
             fullOutput = readFileToString(lexicalOutputName);
             lexicalOutputContent->setTextColor(QColor::fromString("black"));
+            enableButton(syntaxAnalysisButton);
         }
         else{
             fullOutput  = readFileToString(lexicalWrongFileName);
@@ -221,6 +234,7 @@ std::string getParseResult(){
         if(re==SYNTAX_SUCCESS){
             parseOutputContent->setTextColor("black");
             parseOutput();
+            enableButton(actionGotoButton);
         }
         else{
             parseOutputContent->setTextColor("red");
@@ -249,6 +263,17 @@ std::string getParseResult(){
         lexicalOutputContent->setTextColor(QColor::fromString("black"));
         lexicalOutputContent->clear();
         parseOutputContent->clear();
+        disableButton(syntaxAnalysisButton);
+        disableButton(actionGotoButton);
+        isFileLoad = 0;
+    }
+
+    void LR1ParserWindow::enableButton(QPushButton* button){
+        button->setEnabled(1);
+    }
+
+    void LR1ParserWindow::disableButton(QPushButton* button){
+        button->setEnabled(0);
     }
 
 

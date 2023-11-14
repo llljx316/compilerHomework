@@ -50,6 +50,8 @@ private:
     Parser parser;
     QString outputQ;
 
+    bool isFileLoad = 0;
+
     //创建信号与槽
     void createConnections();
 public:
@@ -65,6 +67,10 @@ private slots:
     void parseOutput();
 
     void showActionGoto();
+
+    void enableButton(QPushButton* button);
+
+    void disableButton(QPushButton* button);
 
     //重置函数
     void reset();
