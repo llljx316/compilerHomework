@@ -1,6 +1,4 @@
-﻿#pragma once
-
-#ifndef COMMON_H
+﻿#ifndef COMMON_H
 #define COMMON_H
 
 #include<Windows.h>
@@ -37,9 +35,6 @@ const int DIGIT_SIGN=500;
 const int RESERVED_WORD_NUM=12;
 const int OPERATOR_NUM=37;
 const int DELIMITER_NUM=7;
-
-const std::string lexicalOutputName = "./token_result.txt";
-const std::string lexicalWrongFileName = "./Wrong_info.txt";
 
 struct token
 {
