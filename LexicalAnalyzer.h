@@ -5,14 +5,8 @@
 #include "common.h"
 #include <vector>
 #include "abstractdfa.h"
-
-#include "SymbolRecognizer.h"
-#include "DelimiterDetector.h"
-#include "OperatorDetector.h"
-#include "KeywordDetector.h"
-#include "NumericSequenceValidator.h"
-
-#include "preprocessor.h"
+#include "util.h"
+#include "subDetector.h"
 
 class LexicalAnalyzer
 {

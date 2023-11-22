@@ -74,147 +74,147 @@ int LexicalAnalyzer::analyze(std::string& in_str, std::string& out_str, int& pre
     // 预处理输入字符串
     if (preprocessor.preprocess(in_str, out_str, pre_line, pre_col) != 1) {
         // 预处理错误处理
-        string out_path = lexicalWrongFileName;
-        ofstream outfile(out_path);
-        if (!outfile.is_open()) {
-            cout << "can't open " << out_path << "\n";
+        string errorPath = "./Wrong_info.txt";
+        ofstream errorOutput(errorPath);
+        if (!errorOutput.is_open()) {
+            cout << "can't open " << errorPath << "\n";
             return -1;
         }
-        outfile << pre_line << ' ' << pre_col << ' ' << "Preprocess!";
+        errorOutput << pre_line << ' ' << pre_col << ' ' << "Preprocess!";
         return PreProcess_NOT;
     }
 
     // 初始化分析过程的变量
-    int sign = RIGHT_STATUS;
-    uint start = 0, end = -1;
-    uint line = 1, col = 0;
-    stringstream out_stream;
-    uint last_line = line, last_col = col;
+    int status = RIGHT_STATUS;
+    uint startIndex = 0, endIndex = -1;
+    uint lineNumber = 1, columnNumber = 0;
+    stringstream outputStream;
+    uint lastLineNumber = lineNumber, lastColumnNumber = columnNumber;
 
     // 主循环，遍历输入字符串
     while (1) {
         // 更新开始位置
-        start = end + 1;
+        startIndex = endIndex + 1;
 
         // 检查是否已处理完全部字符串
-        if (start >= out_str.size()) {
+        if (startIndex >= out_str.size()) {
             break;
         }
 
         // 跳过空白字符，更新行和列的位置
-        uint pos = start;
-        uint cur_col = col;
-        uint cur_line = line;
-        while (out_str[pos] == ' ' || out_str[pos] == '\n' || out_str[pos] == '\r') {
-            if (out_str[pos] == ' ' || out_str[pos] == '\r') {
-                pos++;
-                cur_col++;
+        uint position = startIndex;
+        uint currentColumn = columnNumber;
+        uint currentLine = lineNumber;
+        while (out_str[position] == ' ' || out_str[position] == '\n' || out_str[position] == '\r') {
+            if (out_str[position] == ' ' || out_str[position] == '\r') {
+                position++;
+                currentColumn++;
             }
             else {
-                pos++;
-                cur_line++;
-                cur_col = 0;
+                position++;
+                currentLine++;
+                currentColumn = 0;
             }
-            if (pos >= out_str.size()) {
+            if (position >= out_str.size()) {
                 break;
             }
         }
-        start = pos;
-        end = pos;
-        line = cur_line;
-        col = cur_col;
+        startIndex = position;
+        endIndex = position;
+        lineNumber = currentLine;
+        columnNumber = currentColumn;
 
         // 检查是否处理完毕
-        if (start >= out_str.size()) {
-            sign = RIGHT_STATUS;
+        if (startIndex >= out_str.size()) {
+            status = RIGHT_STATUS;
             break;
         }
 
         // 根据当前字符确定进入哪个DFA
-        int enter_dfa = -1;
+        int dfaIndex = -1;
         {
-            char ch = out_str[start];
-            if (isDelimiterChar(ch)) {
-                enter_dfa = DELIMITER;
+            char currentChar = out_str[startIndex];
+            if (isDelimiterChar(currentChar)) {
+                dfaIndex = DELIMITER;
             }
-            else if (isNumericDigit(ch)) {
-                enter_dfa = DIGIT;
+            else if (isNumericDigit(currentChar)) {
+                dfaIndex = DIGIT;
             }
-            else if (isOperatorChar(ch)) {
-                enter_dfa = OPERATOR;
+            else if (isOperatorChar(currentChar)) {
+                dfaIndex = OPERATOR;
             }
         }
 
         // 如果没有直接确定DFA，遍历其他DFA查找匹配
-        if (enter_dfa == -1) {
-            int i;
-            for (i = 0; i < 5; i++) {
-                if (i == OPERATOR || i == DELIMITER || i == DIGIT)
+        if (dfaIndex == -1) {
+            int dfaCounter;
+            for (dfaCounter = 0; dfaCounter < 5; dfaCounter++) {
+                if (dfaCounter == OPERATOR || dfaCounter == DELIMITER || dfaCounter == DIGIT)
                     continue;
-                int result = DFAlist[i]->isAccepted(out_str, start, end, line, col);
+                int result = DFAlist[dfaCounter]->isAccepted(out_str, startIndex, endIndex, lineNumber, columnNumber);
                 if (result == NOT) {
                     continue;
                 }
                 else {
-                    enter_dfa = i;
+                    dfaIndex = dfaCounter;
                     break;
                 }
             }
-            if (i >= 5) {
-                end = start + 5;
-                sign = convertResultToTokenSign(DELIMITER);
+            if (dfaCounter >= 5) {
+                endIndex = startIndex + 5;
+                status = convertResultToTokenSign(DELIMITER);
             }
         }
         else {
-            int result = DFAlist[enter_dfa]->isAccepted(out_str, start, end, line, col);
+            int result = DFAlist[dfaIndex]->isAccepted(out_str, startIndex, endIndex, lineNumber, columnNumber);
             if (result == NOT) {
-                sign = convertResultToTokenSign(enter_dfa);
+                status = convertResultToTokenSign(dfaIndex);
             }
         }
 
         // 如果有错误，终止分析
-        if (sign != RIGHT_STATUS) {
+        if (status != RIGHT_STATUS) {
             break;
         }
         else {
             // 如果没有错误，记录词法单元
-            string value = out_str.substr(start, end - start + 1);
-            int sign = convertResultToTokenSign(enter_dfa);
-            string type;
-            convertTokenSignToOutput(sign, value, type);
-            out_stream << line << ' ' << col << ' ' << type << ' ' << value << "\n";
-            last_line = line;
-            last_col = col;
+            string tokenValue = out_str.substr(startIndex, endIndex - startIndex + 1);
+            int tokenType = convertResultToTokenSign(dfaIndex);
+            string tokenTypeStr;
+            convertTokenSignToOutput(tokenType, tokenValue, tokenTypeStr);
+            outputStream << lineNumber << ' ' << columnNumber << ' ' << tokenTypeStr << ' ' << tokenValue << "\n";
+            lastLineNumber = lineNumber;
+            lastColumnNumber = columnNumber;
         }
     }
 
     // 结果输出到文件
-    if (sign == RIGHT_STATUS) {
+    if (status == RIGHT_STATUS) {
         // 正确处理的结果
-        string out_path = lexicalOutputName;
-        ofstream outfile(out_path);
-        if (!outfile.is_open()) {
-            cout << "can't open " << out_path << "\n";
+        string outputPath = "./token_result.txt";
+        ofstream resultOutput(outputPath);
+        if (!resultOutput.is_open()) {
+            cout << "can't open " << outputPath << "\n";
             return -1;
         }
-        outfile << out_stream.str();
-        outfile << last_line << ' ' << 1 << ' ' << "#" << ' ' << "#" << "\n";
-        outfile.close();
+        resultOutput << outputStream.str();
+        resultOutput << lastLineNumber << ' ' << 1 << ' ' << "#" << ' ' << "#" << "\n";
+        resultOutput.close();
     }
     else {
         // 错误信息输出
-        string out_path = lexicalWrongFileName;
-        ofstream outfile(out_path);
-        if (!outfile.is_open()) {
-            cout << "can't open " << out_path << "\n";
+        string errorPath = "./Wrong_info.txt";
+        ofstream errorOutput(errorPath);
+        if (!errorOutput.is_open()) {
+            cout << "can't open " << errorPath << "\n";
             return -1;
         }
-        string value = out_str.substr(start, end - start + 1);
-        string type;
-        convertTokenSignToOutput(sign, value, type);
-        outfile << last_line << ' ' << last_col + 1 << ' ' << type << ' ' << value << "\n";
-        outfile.close();
+        string tokenValue = out_str.substr(startIndex, endIndex - startIndex + 1);
+        string tokenTypeStr;
+        convertTokenSignToOutput(status, tokenValue, tokenTypeStr);
+        errorOutput << lastLineNumber << ' ' << lastColumnNumber + 1 << ' ' << tokenTypeStr << ' ' << tokenValue << "\n";
+        errorOutput.close();
     }
 
-    return sign;
+    return status;
 }
