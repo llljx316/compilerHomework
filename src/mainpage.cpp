@@ -142,7 +142,7 @@ std::string getParseResult(){
 
         secondLayout->addWidget(lexicalAnalysisButton);
         secondLayout->addWidget(syntaxAnalysisButton);
-        secondLayout->addWidget(viewSyntaxButton);
+//        secondLayout->addWidget(viewSyntaxButton);
         secondLayout->addWidget(resetButton);
         thirdLayout->addWidget(actionGotoButton);
 

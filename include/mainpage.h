@@ -29,7 +29,6 @@ private:
     // 创建按钮
     QPushButton *lexicalAnalysisButton = new QPushButton("词法分析", this);
     QPushButton *syntaxAnalysisButton = new QPushButton("语法分析", this);
-    QPushButton *viewSyntaxButton = new QPushButton("查看语法", this);
     QPushButton *resetButton = new QPushButton("重置", this);
     QPushButton *actionGotoButton = new QPushButton("Action/Goto表", this);
 

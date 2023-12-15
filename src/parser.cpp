@@ -814,12 +814,12 @@ void Parser::print_DFA()
 	//here we start to output the relationships between item_groups
 	of << "\n";
 	int cnt = 0;
-	for (const auto item_group_map : go_map)
+    for (const auto& one_go_map : go_map)
 	{
-		for (const auto& go_relation : item_group_map)
+        for (const auto& go_relation : one_go_map)
 		{
 			std::string label = go_relation.first;
-			of << "node" << cnt << "->" << "node" << go_relation.second << "\n ";// [label = \"" << label << "\",constraint=false]\n";
+            of << "node" << cnt << "->" << "node" << go_relation.second << "\n ";
 		}
 	}
 	of << "}";

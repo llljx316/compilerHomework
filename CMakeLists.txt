@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(compiler1 VERSION 0.1 LANGUAGES CXX)
+project(compiler VERSION 0.1 LANGUAGES CXX)
 
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
@@ -9,57 +9,50 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets LinguistTools)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets LinguistTools)
-
-set(TS_FILES compiler1_zh_CN.ts)
+find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 
 set(PROJECT_SOURCES
         main.cpp
         mainwindow.cpp
-        mainwindow.h
         mainwindow.ui
-        ${TS_FILES}
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
-    qt_add_executable(compiler1
+    qt_add_executable(compiler
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
-        abstractdfa.cpp actionGotoPage.cpp LexicalAnalyzer.cpp main.cpp mainpage.cpp mainwindow.cpp parser.cpp subDetector.cpp  util.cpp
-        abstractdfa.h actionGotoPage.h common.h LexicalAnalyzer.h mainpage.h mainwindow.h parser.h subDetector.h util.h
+        src/abstractdfa.cpp src/actionGotoPage.cpp src/LexicalAnalyzer.cpp src/parser.cpp src/subDetector.cpp src/util.cpp
+        src/mainpage.cpp
+        include/abstractdfa.h include/actionGotoPage.h include/common.h include/LexicalAnalyzer.h include/mainpage.h include/mainwindow.h include/parser.h include/subDetector.h include/util.h
     )
 # Define target properties for Android with Qt 6 as:
-#    set_property(TARGET compiler1 APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
+#    set_property(TARGET compiler APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
 #                 ${CMAKE_CURRENT_SOURCE_DIR}/android)
 # For more information, see https://doc.qt.io/qt-6/qt-add-executable.html#target-creation
-
-    qt_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})
 else()
     if(ANDROID)
-        add_library(compiler1 SHARED
+        add_library(compiler SHARED
             ${PROJECT_SOURCES}
         )
 # Define properties for Android with Qt 5 after find_package() calls as:
 #    set(ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/android")
     else()
-        add_executable(compiler1
+        add_executable(compiler
             ${PROJECT_SOURCES}
         )
     endif()
-
-    qt5_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})
 endif()
 
-target_link_libraries(compiler1 PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+target_link_libraries(compiler PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an
 # explicit, fixed bundle identifier manually though.
 if(${QT_VERSION} VERSION_LESS 6.1.0)
-  set(BUNDLE_ID_OPTION MACOSX_BUNDLE_GUI_IDENTIFIER com.example.compiler1)
+  set(BUNDLE_ID_OPTION MACOSX_BUNDLE_GUI_IDENTIFIER com.example.compiler)
 endif()
-set_target_properties(compiler1 PROPERTIES
+set_target_properties(compiler PROPERTIES
     ${BUNDLE_ID_OPTION}
     MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
     MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
@@ -68,12 +61,14 @@ set_target_properties(compiler1 PROPERTIES
 )
 
 include(GNUInstallDirs)
-install(TARGETS compiler1
+install(TARGETS compiler
     BUNDLE DESTINATION .
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
+include_directories(./include)
+
 if(QT_VERSION_MAJOR EQUAL 6)
-    qt_finalize_executable(compiler1)
+    qt_finalize_executable(compiler)
 endif()
