@@ -217,6 +217,7 @@ std::string getParseResult(){
 
     }
 
+//#define old
     int LR1ParserWindow::parseAnalyse(){
         string output;
 #if 1
