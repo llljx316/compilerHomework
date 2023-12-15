@@ -127,6 +127,7 @@ public:
     std::tuple<bool,std::string,int,int> check(const std::string path);
     std::stack<NewLexeme> symbolS;
     mid_code_gen_parser();
+    void read_grammer_Yacc(const std::string path);
 
 
 protected:

@@ -219,6 +219,8 @@ std::string getParseResult(){
 
     int LR1ParserWindow::parseAnalyse(){
         string output;
+#if 1
+    #ifdef old
         Parser parser;
         parser.read_grammer(".\\grammer.syn");
         parser.get_all_symbol_first();
@@ -228,8 +230,26 @@ std::string getParseResult(){
         parser.print_LR1_table();
 
         parser.print_DFA();
+    #else
+        mid_code_gen_parser parser;
+        //下面是新的读的函数，但是会出问题
+//        parser.read_grammer_Yacc(".\\ANSI_YACC_C99.txt");
+        parser.read_grammer(".\\grammer.syn");
+        parser.get_all_symbol_first();
+        parser.get_item_group_list();
+
+        parser.get_LR1_table();
+        parser.print_LR1_table();
+
+        parser.print_DFA();
+    #endif
+#endif
+
+
 
         //std::cout<<'\n'<<parser.check(".\token_result.txt");
+
+#ifdef old
         int re=parser.check("token_result.txt");
         if(re==SYNTAX_SUCCESS){
             parseOutputContent->setTextColor("black");
@@ -242,6 +262,26 @@ std::string getParseResult(){
             parseOutputContent->setText(error);
         }
         return re;
+#else
+//        mid_code_gen_parser parser;
+        auto re=parser.check("token_result.txt");
+        auto tag=std::get<0>(re);
+        auto message=std::get<1>(re);
+        auto line=std::get<2>(re);
+        auto col=std::get<3>(re);
+        if(tag==true){
+            parseOutputContent->setTextColor("black");
+            parseOutput();
+            enableButton(actionGotoButton);
+        }
+        else{
+            parseOutputContent->setTextColor("red");
+            QString error = (QString::fromStdString(message)+" ("+QString::number(line)+","+QString::number(col)+")\n");;
+            parseOutputContent->setText(error);
+        }
+        return tag;
+#endif
+
     }
 
     void LR1ParserWindow::parseOutput(){

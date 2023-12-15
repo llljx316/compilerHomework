@@ -14,6 +14,7 @@
 //调用的接口
 #include "LexicalAnalyzer.h"
 #include "parser.h"
+#include "mid_code_gen.h"
 #include "util.h"
 #include "actionGotoPage.h"
 #include <string>

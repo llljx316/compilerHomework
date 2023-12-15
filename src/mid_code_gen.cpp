@@ -10,12 +10,207 @@ using namespace std;
 
 //全局变量 语义分析
 std::stack<NewLexeme> LexemeS;
-std::stack<sym_tbl> tableS;//symbol table
+std::stack<sym_tbl> tableS;//InfoSymbol table
 int nextquad = 0;
 std::vector<Quaternion> QuadrupleForm;//TODO:或者直接push 就以全局的nextquad为下标进行存储
 std::tuple<NewLexeme, std::string>(*p[229])();//语义分析指针
 int offset;
 std::stack<int> offsetS;
+
+
+void mid_code_gen_parser::read_grammer_Yacc(const std::string path)
+{
+    std::fstream f(path, std::ios::in);
+    if (!f.is_open())
+    {
+        std::cerr << "FILE WARNING::OBJECT FILE CAN NOT BE OPENED!\n";
+        return;
+    }
+    std::fstream token_file(".//yacc_tokens.txt", std::ios::out);
+    std::fstream non_file(".//yacc_non.txt", std::ios::out);
+    std::fstream generators_file(".//generators.txt", std::ios::out);
+
+
+    std::string tmp;
+    bool read_token = true;
+    unsigned int pos=0;
+    unsigned int end_pos = 0;
+
+
+    num_nontermi = 1; // for we need add a start
+
+    //the same trick with the moon-parser1.0 ,we traverse the grammer for 2 passes
+    // the 1st pass
+    while (f.eof() == false)
+    {
+        getline(f,tmp);
+        if (tmp.empty())
+            continue;
+
+
+        // read in all the tokens (terminator)
+        if (read_token)
+        {
+            tmp += ' ';
+            if (tmp.at(0) == '%')
+                if (tmp.at(1) == '%')
+                    read_token = false;
+                else if(tmp.at(1)!='s')
+                {
+                    pos = tmp.find_first_of(' ');
+                    pos++;
+                    while (pos != tmp.size())
+                    {
+                        end_pos = tmp.find_first_of(' ', pos);
+                        InfoSymbol new_terminator(tmp.substr(pos, end_pos - pos), TERMINATOR);
+                        this->num_termi++;
+                        this->terminators.insert(new_terminator);
+                        this->symbols.insert(new_terminator);
+                        pos = end_pos + 1;
+                    }
+                }
+        }
+
+        //read in geenrators
+        else
+            if (tmp.at(0) != '\t') // a new non_terminator
+            {
+                InfoSymbol new_nontermi(tmp, NON_TERMINATOR, num_nontermi++);
+                this->non_terminators.insert(new_nontermi);
+                symbols.insert(new_nontermi);
+
+            }
+    }
+    f.close();
+
+    InfoSymbol new_start("start", NON_TERMINATOR, 0);
+    non_terminators.insert(new_start);
+    this->symbols.insert(new_start);
+    ProductionRule augmented_generator;
+    augmented_generator.left = new_start;
+
+    auto ite = non_terminators.find(InfoSymbol("translation_unit"));
+    augmented_generator.right_list.emplace_back(*ite);
+    std::vector<ProductionRule> first_list;
+    first_list.emplace_back(augmented_generator);
+    generators_list.emplace_back(first_list);
+    pure_generator_list.emplace_back(augmented_generator);
+
+
+    //2nd pass
+    pos = 0;
+    end_pos = 0;
+    unsigned int order = 1; // the label of ProductionRule //the start order is 1 for we add a new ProductionRule before it
+    f.open(path, std::ios::in);
+    while (f.eof() == false)
+    {
+        getline(f, tmp);
+        if (tmp.empty())
+            continue;
+        if (tmp.at(0) == '%')
+            continue;
+
+        InfoSymbol new_nontermi(tmp);
+
+        std::set<InfoSymbol>::iterator ite;
+        if ((ite=this->non_terminators.find(new_nontermi)) == non_terminators.end())
+            std::cerr << "WTF\n";
+        new_nontermi = *ite;
+
+
+        //get all generators from one left InfoSymbol
+        getline(f, tmp);
+        tmp.erase(0, 1);
+        while (tmp.at(0) != ';')
+        {
+            pos = end_pos = 0;
+            tmp.erase(0, 2);
+            ProductionRule new_generator;
+            std::vector<InfoSymbol> right_list;
+            new_generator.left = new_nontermi;
+
+            tmp += ' ';
+            while (pos != tmp.size())
+            {
+                end_pos = tmp.find_first_of(' ',pos);
+                std::string new_symbol_name = tmp.substr(pos, end_pos - pos);
+
+                if (new_symbol_name.at(0) == '\'') //analogous to '('
+                {
+                    new_symbol_name = new_symbol_name.substr(1,new_symbol_name.size()-2);
+                    InfoSymbol new_symbol(new_symbol_name, TERMINATOR);
+                    this->terminators.insert(new_symbol);
+                    this->symbols.insert(new_symbol);
+                    right_list.emplace_back(new_symbol);
+                }
+                else
+                {
+                    InfoSymbol new_symbol(new_symbol_name, NON_TERMINATOR);
+                    ite = this->non_terminators.find(new_symbol);
+                    if (ite == this->non_terminators.end())
+                    {
+                        ite = this->terminators.find(new_symbol);
+                        //if (ite == this->terminators.end())
+                        //std::cerr << "?\n";
+                        new_symbol.type = TERMINATOR;
+                    }
+                    else
+                        new_symbol.generators_index = ite->generators_index;
+                    right_list.emplace_back(new_symbol);
+                }
+                pos = end_pos + 1;
+            }
+            new_generator.order = order++;
+            new_generator.right_list = right_list;
+            if (this->generators_list.size() <= new_nontermi.generators_index)
+            {
+                std::vector<ProductionRule> new_generator_list;
+                new_generator_list.emplace_back(new_generator);
+                this->generators_list.emplace_back(new_generator_list);
+            }
+            else
+                this->generators_list.at(new_nontermi.generators_index).emplace_back(new_generator);
+
+            pure_generator_list.emplace_back(new_generator);
+            //here we get an ProductionRule
+            getline(f, tmp);
+            tmp.erase(0, 1);
+
+        }
+    }
+
+
+
+
+    std::cout << num_termi << " " << num_nontermi << "\n";
+    for (auto ite = this->non_terminators.begin(); ite != non_terminators.end(); ite++)
+    {
+        non_file << ite->name << "\n";
+    }
+    for (auto ite = this->terminators.begin(); ite != terminators.end(); ite++)
+    {
+        token_file << ite->name << "\n";
+    }
+
+    for (const auto i : generators_list)
+    {
+        for (const auto j : i)
+        {
+            generators_file <<j.order<<"   :"<<j.left.name << " ";
+            generators_file  << " --> ";
+            for (const auto k : j.right_list)
+                generators_file << k.name << " ";
+            generators_file << "\n";
+        }
+        generators_file << "\n";
+    }
+
+    generators_file.close();
+    token_file.close();
+    non_file.close();
+    f.close();
+
+}
 
 bool _IsDigit(const string a)
 {
@@ -160,7 +355,7 @@ std::tuple<NewLexeme, std::string> Identifier_expression()//E->id
     return std::make_tuple(*E, "None");
 }
 //根据语法文件：bool里的（）被包含在控制语句里了
-// int BRANKET_expression(symbol*E,symbol*E1)
+// int BRANKET_expression(InfoSymbol*E,InfoSymbol*E1)
 // {
 //     E->quad=nextquad;//replace the function of M
 //     E->truelist=E1->truelist;
@@ -842,6 +1037,7 @@ std::tuple<NewLexeme, std::string>p44()
     NewLexeme pushWord(LINEOFNONT, LINEOFNONT, "relational_expression", temp, 0);
     return std::make_tuple(pushWord, wrongInfo);
 }
+
 std::tuple<NewLexeme, std::string>p45()
 {
 
