@@ -25,6 +25,9 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         src/abstractdfa.cpp src/actionGotoPage.cpp src/LexicalAnalyzer.cpp src/parser.cpp src/subDetector.cpp src/util.cpp
         src/mainpage.cpp
         include/abstractdfa.h include/actionGotoPage.h include/common.h include/LexicalAnalyzer.h include/mainpage.h include/mainwindow.h include/parser.h include/subDetector.h include/util.h
+        src/mid_code_gen.cpp
+        include/mid_code_gen.h
+
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET compiler APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR

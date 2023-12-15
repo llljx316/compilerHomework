@@ -80,9 +80,9 @@ int Parser::check(const std::string path)
 				}
                 else if (a_ptr->dst > 0)
                 {//r
-					
+                    //
 					ProductionRule x=pure_generator_list[a_ptr->dst];
-
+                    //
 					nodeID++;
 					int fid=nodeID;
 					Lexeme fword(LINEOFNONT, x.left.name, x.left.name, fid);
@@ -112,7 +112,9 @@ int Parser::check(const std::string path)
 						of << "node" << fid << "->node" << eplisonID << "\n";
 					}/**/
 					topState = itemS.top();
+
 					symbolS.push(fword);
+
 
 					StateTransition* g_ptr = LR1_table[topState].goto_ptr->next;
                     while (g_ptr)

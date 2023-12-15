@@ -242,6 +242,8 @@ public:
         this->realV = c.realV;
         this->id = c.id;
     }
+
+    Lexeme(){}
 };
 
 // 解析器类
@@ -290,7 +292,7 @@ public:
     // 打印LR(1)分析表
     void print_LR1_table();
 
-private:  
+protected:
     // 符号到First集合的映射
     std::map<std::string, std::set<InfoSymbol>> symbol2first;
     // 分析表
