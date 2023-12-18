@@ -208,7 +208,7 @@ std::tuple<Token, std::string> MidCodeParser::translate(int id, std::string name
     {
 //        LexemeS.pop();//expression
 //        LexemeS.pop();// ;
-        auto L1 = varStackPopTest();
+        auto L1 = varStackTest.top();
 
         Token temp;
         Token* L = &temp;
