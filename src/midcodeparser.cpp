@@ -519,6 +519,13 @@ int MidCodeParser::analyse(const std::vector<Token>& tokens)
     build();
 
     std::cout << std::endl;
+    std::ofstream stackOut("stack.txt", ios::out);
+    if (stackOut.is_open() == 0)
+    {
+        cout << "output sysstack err" << endl;
+        exit(-1);
+    }
+
 
     fout << std::endl;
 
@@ -534,6 +541,10 @@ int MidCodeParser::analyse(const std::vector<Token>& tokens)
     std::stack<std::pair<unsigned int, std::string>> st;
     st.push({ 0,"$" });
     auto iter = tokens.cbegin();
+
+    //在此输出到文件
+    stackOut << "当前第一字符:" << std::endl;
+    stackOut << iter->get_name() << " " << iter->get_type_output() << std::endl;
 
     for (; ; )
     {
@@ -563,6 +574,11 @@ int MidCodeParser::analyse(const std::vector<Token>& tokens)
                 //                for (std::stack<std::pair<unsigned int, std::string>> dump = st; !dump.empty(); dump.pop())
                 //                    std::cout << dump.top().first << " " << dump.top().second << '\n';
                 //                std::cout << std::endl;
+                stackOut << "当前操作：入栈\n";
+                stackOut << "栈内信息:" << std::endl;
+                for (std::stack<std::pair<unsigned int, std::string>> dump = st; !dump.empty(); dump.pop())
+                    stackOut << dump.top().first << " " << dump.top().second << '\n';
+                stackOut << std::endl;
 
                 //system("pause");
 
@@ -570,6 +586,10 @@ int MidCodeParser::analyse(const std::vector<Token>& tokens)
                 //                //在这里输出程序运行中插入token的信息
                 //                std::cout << "Inserted element:" << std::endl;
                 //                std::cout << iter->get_name() << " " << iter->get_type_output() << std::endl;
+                stackOut<< "当前第一字符:" << std::endl;
+                stackOut << iter->get_name() << " " << iter->get_type_output() << std::endl;
+
+
             }
             else if (act.first == "r")
             {
@@ -597,6 +617,15 @@ int MidCodeParser::analyse(const std::vector<Token>& tokens)
                     fout << "ERROR! at line " << iter->get_line() << std::endl;
                     return iter->get_line();
                 }
+
+                stackOut << "当前操作：归约\n";
+                stackOut << "栈内信息:" << std::endl;
+                    for (std::stack<std::pair<unsigned int, std::string>> dump = st; !dump.empty(); dump.pop())
+                    stackOut << dump.top().first << " " << dump.top().second << '\n';
+                stackOut << std::endl;
+
+                stackOut<< "当前第一字符:" << std::endl;
+                stackOut << iter->get_name() << " " << iter->get_type_output() << std::endl;
             }
 
             else if (act.first == "acc")
@@ -622,6 +651,12 @@ int MidCodeParser::analyse(const std::vector<Token>& tokens)
                 fout << strStackTest.top() << std::endl;
 
                 fout.close();
+                stackOut.close();
+                stackOut << "当前操作：终止\n";
+                stackOut << "栈内信息:" << std::endl;
+                    for (std::stack<std::pair<unsigned int, std::string>> dump = st; !dump.empty(); dump.pop())
+                    stackOut << dump.top().first << " " << dump.top().second << '\n';
+                stackOut << std::endl;
 
                 return 0;
             }

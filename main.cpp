@@ -1,12 +1,21 @@
-#include "widget.h"
-
 #include <QApplication>
-#include <QDebug>
+#include <QWidget>
+#include <QPushButton>
+#include <QTextEdit>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QFileDialog>
+#include <QLabel>
 
-int main(int argc, char *argv[])
-{
-    QApplication a(argc, argv);
-    Widget w;
-    w.show();
-    return a.exec();
+#include "mainpage.h"
+
+
+
+int main(int argc, char *argv[]) {
+    QApplication app(argc, argv);
+
+    LR1ParserWindow window;
+    window.show();
+
+    return app.exec();
 }

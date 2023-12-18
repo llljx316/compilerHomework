@@ -29,24 +29,18 @@ typedef struct SymbolTable
     char symbol[20]; //标识符所在表的名称
 } Table;
 
-int SymIdx = 0;           //display表的下标
-char Symbol[_MaxVarNum][20];  //标识符表
-char Digit[_MaxVarNum][20]; //数字表
-int SymbolNum = 0;            //变量表的下标
-int DigNum = 0;             //常量表的下标
-bool errFlag = 0;         //错误标志
 
-const char *const KeyWord[_MaxKW] = {"int", "void", "if", "else", "while", "return",
-                                         "signed", "char", "double", "unsigned", "const",
-                                         "goto", "for", "float", "break", "class", "case",
-                                         "do", "long", "typedef", "static", "friend",
-                                         "new", "enum", "try", "short", "continue", "sizeof",
-                                         "switch", "private", "catch", "delete", "public", "struct"};
-const char U_opt[] = {'+', '-', '*', '/', '=', '<', '>'}; // 单目运算
-const char *B_opt[] = {"<=", ">=", ":=", "<>", "==", "!="};                //双目运算符
-const char Delimiter[] = {
-    '(', ')', ',', ';', '.', '[',
-    ']', ':', '{', '}', '"'}; // 界符
+extern int SymIdx;
+extern char Symbol[_MaxVarNum][20];
+extern char Digit[_MaxVarNum][20];
+extern int SymbolNum;
+extern int DigNum;
+extern bool errFlag;
+
+extern const char *const KeyWord[_MaxKW];
+extern const char U_opt[];
+extern const char *B_opt[];
+extern const char Delimiter[];
 
 /*
 0——33：关键字："int", "void", "if", "else", "while", "return"
@@ -58,10 +52,10 @@ const char Delimiter[] = {
 50——60：'(', ')', ',', ';', '.', '[', ']', ':', '{', '}', '"'
 */
 
-class LexAnalyzer
+class LexicalAnalyzer
 {
 public:
-    LexAnalyzer();
+    LexicalAnalyzer();
     void Scanner(char ch[], int ch_len, Table table[_MAX], int line_num);
     void error(char str[20], int line_num, int err_type);
 };

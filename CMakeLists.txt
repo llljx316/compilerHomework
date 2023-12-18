@@ -26,6 +26,12 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         main.cpp mainwindow.cpp
         include/KeyWord.h include/lexicalanalyzer.h include/lritem.h include/mainwindow.h include/midcodeparser.h include/parser.h include/production.h include/scanner.h include/token.h include/TokenType.h include/widget.h
         src/lexicalanalyzer.cpp src/lritem.cpp src/midcodeparser.cpp src/parser.cpp src/production.cpp src/scanner.cpp src/token.cpp src/widget.cpp
+        src/mainpage.cpp
+        include/mainpage.h
+        src/util.cpp
+        include/util.h
+        src/QuadExpression.cpp
+        include/QuadExpression.h
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET compiler_11 APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
