@@ -15,7 +15,7 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 set(PROJECT_SOURCES
         main.cpp
         mainwindow.cpp
-        mainwindow.h
+#        include/mainwindow.h
         mainwindow.ui
 )
 
@@ -23,9 +23,9 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(compiler_11
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
-        lritem.cpp main.cpp mainwindow.cpp parser.cpp midcodeparser.cpp production.cpp scanner.cpp token.cpp widget.cpp
-        KeyWord.h lexicalanalyzer.h lritem.h mainwindow.h parser.h midcodeparser.h production.h scanner.h token.h TokenType.h widget.h
-        midcodeparser.h midcodeparser.cpp
+        main.cpp mainwindow.cpp
+        include/KeyWord.h include/lexicalanalyzer.h include/lritem.h include/mainwindow.h include/midcodeparser.h include/parser.h include/production.h include/scanner.h include/token.h include/TokenType.h include/widget.h
+        src/lexicalanalyzer.cpp src/lritem.cpp src/midcodeparser.cpp src/parser.cpp src/production.cpp src/scanner.cpp src/token.cpp src/widget.cpp
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET compiler_11 APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
@@ -68,6 +68,11 @@ install(TARGETS compiler_11
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
+include_directories(./include)
+
 if(QT_VERSION_MAJOR EQUAL 6)
     qt_finalize_executable(compiler_11)
 endif()
+
+
+
