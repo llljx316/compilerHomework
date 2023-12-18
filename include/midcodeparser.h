@@ -12,6 +12,17 @@ typedef std::pair<std::string, int> psi;
 typedef std::vector<psi> vpsi;
 typedef std::set<LR1> LR1set;
 
+struct Quaternion
+{
+    std::string type;
+    std::string a;
+    std::string b;
+    // int addr=INIT_STATE;//init_state
+    std::string addr = "INIT_STATE";//init_state
+    Quaternion(std::string type, std::string a, std::string b, std::string addr) :type(type), a(a), b(b), addr(addr) {};
+    Quaternion() { addr = "INIT_STATE"; };
+};
+
 class MidCodeParser:public Parser
 {
 protected:

@@ -32,6 +32,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         include/util.h
         src/QuadExpression.cpp
         include/QuadExpression.h
+        include/Lexeme.h
+        src/Lexeme.cpp
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET compiler_11 APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR

@@ -12,9 +12,12 @@
 #include <QFile>
 #include <QFileDialog>
 #define test
+#define SUCCESS 0
+#define ERROR -1
 
 #include <iostream>
-    using namespace std;
+#include "Lexeme.h"
+using namespace std;
 
 std::stack<std::string> strStackTest;
 std::stack<std::string> varStackTest;
@@ -22,6 +25,10 @@ int tempNumTest;
 int labelNumTest;
 
 ofstream fout;
+//四元式结构体
+std::vector<Quaternion> QuadrupleForm;//TODO:或者直接push 就以全局的nextquad为下标进行存储
+
+
 
 std::string itoTempTest(int i)
 {
@@ -51,9 +58,37 @@ std::string strStackPopTest()
     return str;
 }
 
-std::string cmdTest(std::string a, std::string b, std::string c, std::string d)
+std::string cmd(std::string a, std::string b, std::string c, std::string d)
 {
+    QuadrupleForm.push_back(Quaternion(a,b,c,d));
     return  "(" + a + ", " + b + ", " + c + ", " + d + ")";
+}
+
+bool _IsDigit(const string a)
+{
+    for (auto it : a)
+        if (!isdigit(it))
+            return false;
+    return true;
+}
+
+int backpatch(std::set<int>list, string addr)
+{
+    for (int i : list) {
+        if (QuadrupleForm[i].addr != "INIT_STATE")
+        {
+            string temp = QuadrupleForm[i].addr;
+            if (_IsDigit(temp))
+                return ERROR;
+        }//already exist
+        else
+            QuadrupleForm[i].addr = addr;
+    }
+    return SUCCESS;
+}
+void merge(std::set<int>* list1, std::set<int>* list2, std::set<int>* dst)
+{
+    std::set_union(list1->begin(), list1->end(), list2->begin(), list2->end(), std::inserter(*dst, dst->begin()));
 }
 
 int MidCodeParser::translate(int id, std::string name)
@@ -92,6 +127,8 @@ int MidCodeParser::translate(int id, std::string name)
 
     case 13:
     {
+        //构造符号表
+
         varStackPopTest();
 #ifdef test
         cout << "[case 13] [var pop]" << endl;
@@ -126,9 +163,12 @@ int MidCodeParser::translate(int id, std::string name)
     {
         auto r = varStackPopTest();
         auto l = varStackPopTest();
+        //检查是否符号表，类型是否正确，是否定义
+
+
         std::ostringstream os;
         os << strStackPopTest();
-        os << cmdTest("=", r, "", l) << std::endl;
+        os << cmd("=", r, "", l) << std::endl;
         strStackTest.push(os.str());
         varStackTest.push(l);
 #ifdef test
@@ -150,7 +190,7 @@ int MidCodeParser::translate(int id, std::string name)
         os << lstr << rstr;
         auto rvar = varStackPopTest();
         auto lvar = varStackPopTest();
-        os << cmdTest("or", lvar, rvar, itoTempTest(tempNumTest)) << std::endl;
+        os << cmd("or", lvar, rvar, itoTempTest(tempNumTest)) << std::endl;
         strStackTest.push(os.str());
         varStackTest.push(itoTempTest(tempNumTest));
         tempNumTest++;
@@ -173,7 +213,7 @@ int MidCodeParser::translate(int id, std::string name)
         os << lstr << rstr;
         auto rvar = varStackPopTest();
         auto lvar = varStackPopTest();
-        os << cmdTest("and", lvar, rvar, itoTempTest(tempNumTest)) << std::endl;
+        os << cmd("and", lvar, rvar, itoTempTest(tempNumTest)) << std::endl;
         strStackTest.push(os.str());
         varStackTest.push(itoTempTest(tempNumTest));
         tempNumTest++;
@@ -196,7 +236,7 @@ int MidCodeParser::translate(int id, std::string name)
         os << lstr << rstr;
         auto rvar = varStackPopTest();
         auto lvar = varStackPopTest();
-        os << cmdTest("==", lvar, rvar, itoTempTest(tempNumTest)) << std::endl;
+        os << cmd("==", lvar, rvar, itoTempTest(tempNumTest)) << std::endl;
         strStackTest.push(os.str());
         varStackTest.push(itoTempTest(tempNumTest));
         tempNumTest++;
@@ -219,7 +259,7 @@ int MidCodeParser::translate(int id, std::string name)
         os << lstr << rstr;
         auto rvar = varStackPopTest();
         auto lvar = varStackPopTest();
-        os << cmdTest("!=", lvar, rvar, itoTempTest(tempNumTest)) << std::endl;
+        os << cmd("!=", lvar, rvar, itoTempTest(tempNumTest)) << std::endl;
         strStackTest.push(os.str());
         varStackTest.push(itoTempTest(tempNumTest));
         tempNumTest++;
@@ -242,7 +282,7 @@ int MidCodeParser::translate(int id, std::string name)
         os << lstr << rstr;
         auto rvar = varStackPopTest();
         auto lvar = varStackPopTest();
-        os << cmdTest("<", lvar, rvar, itoTempTest(tempNumTest)) << std::endl;
+        os << cmd("<", lvar, rvar, itoTempTest(tempNumTest)) << std::endl;
         strStackTest.push(os.str());
         varStackTest.push(itoTempTest(tempNumTest));
         tempNumTest++;
@@ -265,7 +305,7 @@ int MidCodeParser::translate(int id, std::string name)
         os << lstr << rstr;
         auto rvar = varStackPopTest();
         auto lvar = varStackPopTest();
-        os << cmdTest(">", lvar, rvar, itoTempTest(tempNumTest)) << std::endl;
+        os << cmd(">", lvar, rvar, itoTempTest(tempNumTest)) << std::endl;
         strStackTest.push(os.str());
         varStackTest.push(itoTempTest(tempNumTest));
         tempNumTest++;
@@ -288,7 +328,7 @@ int MidCodeParser::translate(int id, std::string name)
         os << lstr << rstr;
         auto rvar = varStackPopTest();
         auto lvar = varStackPopTest();
-        os << cmdTest("<=", lvar, rvar, itoTempTest(tempNumTest)) << std::endl;
+        os << cmd("<=", lvar, rvar, itoTempTest(tempNumTest)) << std::endl;
         strStackTest.push(os.str());
         varStackTest.push(itoTempTest(tempNumTest));
         tempNumTest++;
@@ -311,7 +351,7 @@ int MidCodeParser::translate(int id, std::string name)
         os << lstr << rstr;
         auto rvar = varStackPopTest();
         auto lvar = varStackPopTest();
-        os << cmdTest(">=", lvar, rvar, itoTempTest(tempNumTest)) << std::endl;
+        os << cmd(">=", lvar, rvar, itoTempTest(tempNumTest)) << std::endl;
         strStackTest.push(os.str());
         varStackTest.push(itoTempTest(tempNumTest));
         tempNumTest++;
@@ -334,7 +374,7 @@ int MidCodeParser::translate(int id, std::string name)
         os << lstr << rstr;
         auto rvar = varStackPopTest();
         auto lvar = varStackPopTest();
-        os << cmdTest("+", lvar, rvar, itoTempTest(tempNumTest)) << std::endl;
+        os << cmd("+", lvar, rvar, itoTempTest(tempNumTest)) << std::endl;
         strStackTest.push(os.str());
         varStackTest.push(itoTempTest(tempNumTest));
         tempNumTest++;
@@ -357,7 +397,7 @@ int MidCodeParser::translate(int id, std::string name)
         os << lstr << rstr;
         auto rvar = varStackPopTest();
         auto lvar = varStackPopTest();
-        os << cmdTest("-", lvar, rvar, itoTempTest(tempNumTest)) << std::endl;
+        os << cmd("-", lvar, rvar, itoTempTest(tempNumTest)) << std::endl;
         strStackTest.push(os.str());
         varStackTest.push(itoTempTest(tempNumTest));
         tempNumTest++;
@@ -380,7 +420,7 @@ int MidCodeParser::translate(int id, std::string name)
         os << lstr << rstr;
         auto rvar = varStackPopTest();
         auto lvar = varStackPopTest();
-        os << cmdTest("*", lvar, rvar, itoTempTest(tempNumTest)) << std::endl;
+        os << cmd("*", lvar, rvar, itoTempTest(tempNumTest)) << std::endl;
         strStackTest.push(os.str());
         varStackTest.push(itoTempTest(tempNumTest));
         tempNumTest++;
@@ -403,7 +443,7 @@ int MidCodeParser::translate(int id, std::string name)
         os << lstr << rstr;
         auto rvar = varStackPopTest();
         auto lvar = varStackPopTest();
-        os << cmdTest("/", lvar, rvar, itoTempTest(tempNumTest)) << std::endl;
+        os << cmd("/", lvar, rvar, itoTempTest(tempNumTest)) << std::endl;
         strStackTest.push(os.str());
         varStackTest.push(itoTempTest(tempNumTest));
         tempNumTest++;
@@ -437,14 +477,14 @@ int MidCodeParser::translate(int id, std::string name)
         auto rvar = varStackPopTest();
         auto lvar = varStackPopTest();
 
-        os << cmdTest(itoLabelTest(labelNumTest), "", "", "") << std::endl;
+        os << cmd(itoLabelTest(labelNumTest), "", "", "") << std::endl;
         os << lstr;
-        os << cmdTest("J!=", lvar, "0", itoLabelTest(labelNumTest + 1)) << std::endl;
-        os << cmdTest("J", "", "", itoLabelTest(labelNumTest + 2)) << std::endl;
-        os << cmdTest(itoLabelTest(labelNumTest + 1), "", "", "") << std::endl;
+        os << cmd("J!=", lvar, "0", itoLabelTest(labelNumTest + 1)) << std::endl;
+        os << cmd("J", "", "", itoLabelTest(labelNumTest + 2)) << std::endl;
+        os << cmd(itoLabelTest(labelNumTest + 1), "", "", "") << std::endl;
         os << rstr;
-        os << cmdTest("J", "", "", itoLabelTest(labelNumTest)) << std::endl;
-        os << cmdTest(itoLabelTest(labelNumTest + 2), "", "", "") << std::endl;
+        os << cmd("J", "", "", itoLabelTest(labelNumTest)) << std::endl;
+        os << cmd(itoLabelTest(labelNumTest + 2), "", "", "") << std::endl;
         labelNumTest += 3;
         strStackTest.push(os.str());
         varStackTest.push(lvar);
@@ -459,11 +499,11 @@ int MidCodeParser::translate(int id, std::string name)
         auto rvar = varStackPopTest();
         auto lvar = varStackPopTest();
         os << lstr;
-        os << cmdTest("J!=", lvar, "0", itoLabelTest(labelNumTest)) << std::endl;
-        os << cmdTest("J", "", "", itoLabelTest(labelNumTest + 1)) << std::endl;
-        os << cmdTest(itoLabelTest(labelNumTest), "", "", "") << std::endl;;
+        os << cmd("J!=", lvar, "0", itoLabelTest(labelNumTest)) << std::endl;
+        os << cmd("J", "", "", itoLabelTest(labelNumTest + 1)) << std::endl;
+        os << cmd(itoLabelTest(labelNumTest), "", "", "") << std::endl;;
         os << rstr;
-        os << cmdTest(itoLabelTest(labelNumTest + 1), "", "", "") << std::endl;
+        os << cmd(itoLabelTest(labelNumTest + 1), "", "", "") << std::endl;
         labelNumTest += 2;
         strStackTest.push(os.str());
         varStackTest.push(lvar);
@@ -482,14 +522,14 @@ int MidCodeParser::translate(int id, std::string name)
         auto lvar = varStackPopTest();
 
         os << lstr;
-        os << cmdTest("J!=", lvar, "0", itoLabelTest(labelNumTest)) << std::endl;
-        os << cmdTest("J", "", "", itoLabelTest(labelNumTest + 1)) << std::endl;
-        os << cmdTest(itoLabelTest(labelNumTest), "", "", "") << std::endl;;
+        os << cmd("J!=", lvar, "0", itoLabelTest(labelNumTest)) << std::endl;
+        os << cmd("J", "", "", itoLabelTest(labelNumTest + 1)) << std::endl;
+        os << cmd(itoLabelTest(labelNumTest), "", "", "") << std::endl;;
         os << midstr;
-        os << cmdTest("J", "", "", itoLabelTest(labelNumTest + 2)) << std::endl;
-        os << cmdTest(itoLabelTest(labelNumTest + 1), "", "", "") << std::endl;
+        os << cmd("J", "", "", itoLabelTest(labelNumTest + 2)) << std::endl;
+        os << cmd(itoLabelTest(labelNumTest + 1), "", "", "") << std::endl;
         os << rstr;
-        os << cmdTest(itoLabelTest(labelNumTest + 2), "", "", "") << std::endl;
+        os << cmd(itoLabelTest(labelNumTest + 2), "", "", "") << std::endl;
         labelNumTest += 3;
         strStackTest.push(os.str());
         varStackTest.push(lvar);

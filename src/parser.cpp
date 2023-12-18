@@ -46,7 +46,7 @@ std::string strStackPop()
     return top_str;
 }
 
-std::string cmd(std::string a, std::string b, std::string c, std::string d)
+std::string cmd1(std::string a, std::string b, std::string c, std::string d)
 {
     return  "(" + a + ", " + b + ", " + c + ", " + d + ")";
 }
@@ -112,7 +112,7 @@ std::string cmd(std::string a, std::string b, std::string c, std::string d)
 //        auto l_var = varStackPop();
 //        std::ostringstream os;
 //        os << strStackPop();
-//        os << cmd("=", r_var, "", l_var) << std::endl;
+//        os << cmd1("=", r_var, "", l_var) << std::endl;
 //        str_stack.push(os.str());
 //        var_stack.push(l_var);
 //#ifdef test
@@ -130,7 +130,7 @@ std::string cmd(std::string a, std::string b, std::string c, std::string d)
 //        os << l_str << r_str;
 //        auto r_var = varStackPop();
 //        auto l_var = varStackPop();
-//        os << cmd("or", l_str, r_var, itoTemp(temp_num)) << std::endl;
+//        os << cmd1("or", l_str, r_var, itoTemp(temp_num)) << std::endl;
 //        str_stack.push(os.str());
 //        var_stack.push(itoTemp(temp_num));
 //        temp_num++;
@@ -149,7 +149,7 @@ std::string cmd(std::string a, std::string b, std::string c, std::string d)
 //        os << l_str << r_str;
 //        auto r_var = varStackPop();
 //        auto l_var = varStackPop();
-//        os << cmd("and", l_var, r_var, itoTemp(temp_num)) << std::endl;
+//        os << cmd1("and", l_var, r_var, itoTemp(temp_num)) << std::endl;
 //        str_stack.push(os.str());
 //        var_stack.push(itoTemp(temp_num));
 //        temp_num++;
@@ -168,7 +168,7 @@ std::string cmd(std::string a, std::string b, std::string c, std::string d)
 //        os << l_str << r_str;
 //        auto r_var = varStackPop();
 //        auto l_var = varStackPop();
-//        os << cmd("==", l_var, r_var, itoTemp(temp_num)) << std::endl;
+//        os << cmd1("==", l_var, r_var, itoTemp(temp_num)) << std::endl;
 //        str_stack.push(os.str());
 //        var_stack.push(itoTemp(temp_num));
 //        temp_num++;
@@ -187,7 +187,7 @@ std::string cmd(std::string a, std::string b, std::string c, std::string d)
 //        os << l_str << r_str;
 //        auto r_var = varStackPop();
 //        auto l_var = varStackPop();
-//        os << cmd("!=", l_var, r_var, itoTemp(temp_num)) << std::endl;
+//        os << cmd1("!=", l_var, r_var, itoTemp(temp_num)) << std::endl;
 //        str_stack.push(os.str());
 //        var_stack.push(itoTemp(temp_num));
 //        temp_num++;
@@ -206,7 +206,7 @@ std::string cmd(std::string a, std::string b, std::string c, std::string d)
 //        os << l_str << r_str;
 //        auto r_var = varStackPop();
 //        auto l_var = varStackPop();
-//        os << cmd("<", l_var, r_var, itoTemp(temp_num)) << std::endl;
+//        os << cmd1("<", l_var, r_var, itoTemp(temp_num)) << std::endl;
 //        str_stack.push(os.str());
 //        var_stack.push(itoTemp(temp_num));
 //        temp_num++;
@@ -225,7 +225,7 @@ std::string cmd(std::string a, std::string b, std::string c, std::string d)
 //        os << l_str << r_str;
 //        auto r_var = varStackPop();
 //        auto l_var = varStackPop();
-//        os << cmd(">", l_var, r_var, itoTemp(temp_num)) << std::endl;
+//        os << cmd1(">", l_var, r_var, itoTemp(temp_num)) << std::endl;
 //        str_stack.push(os.str());
 //        var_stack.push(itoTemp(temp_num));
 //        temp_num++;
@@ -244,7 +244,7 @@ std::string cmd(std::string a, std::string b, std::string c, std::string d)
 //        os << l_str << r_str;
 //        auto r_var = varStackPop();
 //        auto l_var = varStackPop();
-//        os << cmd("<=", l_var, r_var, itoTemp(temp_num)) << std::endl;
+//        os << cmd1("<=", l_var, r_var, itoTemp(temp_num)) << std::endl;
 //        str_stack.push(os.str());
 //        var_stack.push(itoTemp(temp_num));
 //        temp_num++;
@@ -263,7 +263,7 @@ std::string cmd(std::string a, std::string b, std::string c, std::string d)
 //        os << l_str << r_str;
 //        auto r_var = varStackPop();
 //        auto l_var = varStackPop();
-//        os << cmd(">=", l_var, r_var, itoTemp(temp_num)) << std::endl;
+//        os << cmd1(">=", l_var, r_var, itoTemp(temp_num)) << std::endl;
 //        str_stack.push(os.str());
 //        var_stack.push(itoTemp(temp_num));
 //        temp_num++;
@@ -282,7 +282,7 @@ std::string cmd(std::string a, std::string b, std::string c, std::string d)
 //        os << l_str << r_str;
 //        auto r_var = varStackPop();
 //        auto l_var = varStackPop();
-//        os << cmd("+", l_var, r_var, itoTemp(temp_num)) << std::endl;
+//        os << cmd1("+", l_var, r_var, itoTemp(temp_num)) << std::endl;
 //        str_stack.push(os.str());
 //        var_stack.push(itoTemp(temp_num));
 //        temp_num++;
@@ -301,7 +301,7 @@ std::string cmd(std::string a, std::string b, std::string c, std::string d)
 //        os << l_str << r_str;
 //        auto r_var = varStackPop();
 //        auto l_var = varStackPop();
-//        os << cmd("-", l_var, r_var, itoTemp(temp_num)) << std::endl;
+//        os << cmd1("-", l_var, r_var, itoTemp(temp_num)) << std::endl;
 //        str_stack.push(os.str());
 //        var_stack.push(itoTemp(temp_num));
 //        temp_num++;
@@ -320,7 +320,7 @@ std::string cmd(std::string a, std::string b, std::string c, std::string d)
 //        os << l_str << r_str;
 //        auto r_var = varStackPop();
 //        auto l_var = varStackPop();
-//        os << cmd("*", l_var, r_var, itoTemp(temp_num)) << std::endl;
+//        os << cmd1("*", l_var, r_var, itoTemp(temp_num)) << std::endl;
 //        str_stack.push(os.str());
 //        var_stack.push(itoTemp(temp_num));
 //        temp_num++;
@@ -339,7 +339,7 @@ std::string cmd(std::string a, std::string b, std::string c, std::string d)
 //        os << l_str << r_str;
 //        auto r_var = varStackPop();
 //        auto l_var = varStackPop();
-//        os << cmd("/", l_var, r_var, itoTemp(temp_num)) << std::endl;
+//        os << cmd1("/", l_var, r_var, itoTemp(temp_num)) << std::endl;
 //        str_stack.push(os.str());
 //        var_stack.push(itoTemp(temp_num));
 //        temp_num++;
@@ -367,14 +367,14 @@ std::string cmd(std::string a, std::string b, std::string c, std::string d)
 //        auto r_var = varStackPop();
 //        auto l_var = varStackPop();
 
-//        os << cmd(itoLabel(label_num), "", "", "") << std::endl;
+//        os << cmd1(itoLabel(label_num), "", "", "") << std::endl;
 //        os << l_str;
-//        os << cmd("J!=", l_var, "0", itoLabel(label_num + 1)) << std::endl;
-//        os << cmd("J", "", "", itoLabel(label_num + 2)) << std::endl;
-//        os << cmd(itoLabel(label_num + 1), "", "", "") << std::endl;
+//        os << cmd1("J!=", l_var, "0", itoLabel(label_num + 1)) << std::endl;
+//        os << cmd1("J", "", "", itoLabel(label_num + 2)) << std::endl;
+//        os << cmd1(itoLabel(label_num + 1), "", "", "") << std::endl;
 //        os << r_str;
-//        os << cmd("J", "", "", itoLabel(label_num)) << std::endl;
-//        os << cmd(itoLabel(label_num + 2), "", "", "") << std::endl;
+//        os << cmd1("J", "", "", itoLabel(label_num)) << std::endl;
+//        os << cmd1(itoLabel(label_num + 2), "", "", "") << std::endl;
 //        label_num += 3;
 //        str_stack.push(os.str());
 //        var_stack.push(l_var);
@@ -389,11 +389,11 @@ std::string cmd(std::string a, std::string b, std::string c, std::string d)
 //        auto r_var = varStackPop();
 //        auto l_var = varStackPop();
 //        os << l_str;
-//        os << cmd("J!=", l_var, "0", itoLabel(label_num)) << std::endl;
-//        os << cmd("J", "", "", itoLabel(label_num + 1)) << std::endl;
-//        os << cmd(itoLabel(label_num), "", "", "") << std::endl;;
+//        os << cmd1("J!=", l_var, "0", itoLabel(label_num)) << std::endl;
+//        os << cmd1("J", "", "", itoLabel(label_num + 1)) << std::endl;
+//        os << cmd1(itoLabel(label_num), "", "", "") << std::endl;;
 //        os << r_str;
-//        os << cmd(itoLabel(label_num + 1), "", "", "") << std::endl;
+//        os << cmd1(itoLabel(label_num + 1), "", "", "") << std::endl;
 //        label_num += 2;
 //        str_stack.push(os.str());
 //        var_stack.push(l_var);
@@ -412,14 +412,14 @@ std::string cmd(std::string a, std::string b, std::string c, std::string d)
 //        auto l_var = varStackPop();
 
 //        os << l_str;
-//        os << cmd("J!=", l_var, "0", itoLabel(label_num)) << std::endl;
-//        os << cmd("J", "", "", itoLabel(label_num + 1)) << std::endl;
-//        os << cmd(itoLabel(label_num), "", "", "") << std::endl;;
+//        os << cmd1("J!=", l_var, "0", itoLabel(label_num)) << std::endl;
+//        os << cmd1("J", "", "", itoLabel(label_num + 1)) << std::endl;
+//        os << cmd1(itoLabel(label_num), "", "", "") << std::endl;;
 //        os << m_str;
-//        os << cmd("J", "", "", itoLabel(label_num + 2)) << std::endl;
-//        os << cmd(itoLabel(label_num + 1), "", "", "") << std::endl;
+//        os << cmd1("J", "", "", itoLabel(label_num + 2)) << std::endl;
+//        os << cmd1(itoLabel(label_num + 1), "", "", "") << std::endl;
 //        os << r_str;
-//        os << cmd(itoLabel(label_num + 2), "", "", "") << std::endl;
+//        os << cmd1(itoLabel(label_num + 2), "", "", "") << std::endl;
 //        label_num += 3;
 //        str_stack.push(os.str());
 //        var_stack.push(l_var);
