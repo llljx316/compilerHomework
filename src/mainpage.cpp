@@ -351,6 +351,8 @@ int LR1ParserWindow::parseAnalyse(){
         parseOutputContent->setTextColor("red");
 //        QString error = (QString::fromStdString(message)+" ("+QString::number(line)+","+QString::number(col)+")\n");;
 //        parseOutputContent->setText(error);
+        //直接写了得了
+
     }
 
     QFile file( "stack.txt" );

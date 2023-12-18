@@ -16,25 +16,30 @@
 #define ERROR -1
 
 #include <iostream>
-#include "Lexeme.h"
+//#include "Lexeme.h"
 using namespace std;
 
 std::stack<std::string> strStackTest;
-std::stack<std::string> varStackTest;
+std::stack<Token> varStackTest;
 int tempNumTest;
 int labelNumTest;
+int nextquad = 0;
+int tableid = 0;
 
 ofstream fout;
 //四元式结构体
 std::vector<Quaternion> QuadrupleForm;//TODO:或者直接push 就以全局的nextquad为下标进行存储
+//符号表
+std::vector<sym_tbl> tableS;
 
 
 
-std::string itoTempTest(int i)
+Token itoTempTest(int i)
 {
     std::ostringstream temp;
     temp << i << "_TEMP";
-    return temp.str();
+    Token t(temp.str(),TokenType::ID,-2);
+    return t;
 }
 
 std::string itoLabelTest(int i)
@@ -44,7 +49,7 @@ std::string itoLabelTest(int i)
     return temp.str();
 }
 
-std::string varStackPopTest()
+Token varStackPopTest()
 {
     auto var = varStackTest.top();
     varStackTest.pop();
@@ -61,6 +66,7 @@ std::string strStackPopTest()
 std::string cmd(std::string a, std::string b, std::string c, std::string d)
 {
     QuadrupleForm.push_back(Quaternion(a,b,c,d));
+    nextquad++;
     return  "(" + a + ", " + b + ", " + c + ", " + d + ")";
 }
 
@@ -91,7 +97,13 @@ void merge(std::set<int>* list1, std::set<int>* list2, std::set<int>* dst)
     std::set_union(list1->begin(), list1->end(), list2->begin(), list2->end(), std::inserter(*dst, dst->begin()));
 }
 
-int MidCodeParser::translate(int id, std::string name)
+void makelist(int quad, std::set<int>* dst)
+{
+    dst->clear();
+    dst->insert(quad);
+}
+
+std::tuple<Token, std::string> MidCodeParser::translate(int id, std::string name)
 {
 #ifdef test
     cout << "[translate] " << id << "  varSize=[" << varStackTest.size() << "]";
@@ -116,24 +128,42 @@ int MidCodeParser::translate(int id, std::string name)
         break;
     }
 
+
+//    [7] compound_statement -> { }
+//    [8] compound_statement -> { declaration_list }
+//    [9] compound_statement -> { statement_list }
+//    [10] compound_statement -> { declaration_list statement_list }
+    case 7: case 8:
+    {
+        tableS.pop_back();
+        break;
+    }
+
     case 9: case 10:
     {
         auto str = strStackPopTest();
         std::ostringstream os;
         os << std::endl << str;
         strStackTest.push(os.str());
+        tableS.pop_back();
         break;
     }
 
+        //[13] declaration_type -> type_specifier ID ;
     case 13:
     {
         //构造符号表
+        auto new_sign = varStackPopTest();
+        sym_tbl& topSym = tableS.back();
 
-        varStackPopTest();
+        Token t(new_sign.get_name(),new_sign.get_type(),new_sign.get_line());
+        topSym.addsys(t);
+
 #ifdef test
         cout << "[case 13] [var pop]" << endl;
         fout << "[case 13] [var pop]" << endl;
 #endif // test
+
         break;
     }
 
@@ -159,16 +189,61 @@ int MidCodeParser::translate(int id, std::string name)
         break;
     }
 
+    case 21:{
+//        NewLexeme delimiter = LexemeS.top();
+//        LexemeS.pop();// ;
+
+        Token temp;
+        Token* L = &temp;
+        L->quad = (nextquad);
+        makelist(nextquad, &L->nextlist);
+
+        return std::make_tuple(*L, "None");
+        break;
+
+
+    }
+
+    case 22:
+    {
+//        LexemeS.pop();//expression
+//        LexemeS.pop();// ;
+        auto L1 = varStackPopTest();
+
+        Token temp;
+        Token* L = &temp;
+
+
+        if (!L1.nextlist.empty()) {//really bool/control sentences
+            if (backpatch(L1.nextlist, std::to_string(nextquad)) == ERROR)
+                return std::make_tuple(*L, "SEMANTIC ERROR::backpatch error in end_sentence in nextlist\n");
+            // return std::make_tuple(*L, "SEMANTIC ERROR::backpatch error in " + L1.value + " nextlist\n");
+            L->nextlist = L1.nextlist;
+        }
+        return std::make_tuple(*L, "None");
+        break;
+    }
+
+//    [24] assignment_expression -> ID = assignment_expression
     case 24:
     {
         auto r = varStackPopTest();
         auto l = varStackPopTest();
         //检查是否符号表，类型是否正确，是否定义
 
+        Token left;
+        for(int i=0;i<tableS.size();++i){
+            sym_tbl& cur_t = tableS[i];
+            left = cur_t.lookup(l.get_name());
+            if(left.name != "None") break;
+        }
+        if (left.name == "None") {
+            return std::make_tuple(l,  std::string("SEMANTIC ERROR::use undeclared variable\n"));
+        }
 
         std::ostringstream os;
         os << strStackPopTest();
-        os << cmd("=", r, "", l) << std::endl;
+        os << cmd("=", r.get_name(), "", l.get_name()) << std::endl;
         strStackTest.push(os.str());
         varStackTest.push(l);
 #ifdef test
@@ -190,9 +265,12 @@ int MidCodeParser::translate(int id, std::string name)
         os << lstr << rstr;
         auto rvar = varStackPopTest();
         auto lvar = varStackPopTest();
-        os << cmd("or", lvar, rvar, itoTempTest(tempNumTest)) << std::endl;
+
+
+        Token targ = itoTempTest(tempNumTest);
+        os << cmd("or", lvar.get_name(), rvar.get_name(), targ.get_name()) << std::endl;
         strStackTest.push(os.str());
-        varStackTest.push(itoTempTest(tempNumTest));
+        varStackTest.push(targ);
         tempNumTest++;
 #ifdef test
         cout << "[case" << id << "] [str pop] " << endl;
@@ -203,6 +281,19 @@ int MidCodeParser::translate(int id, std::string name)
         fout << "[case" << id << "] [str pop] " << endl;
         fout << "[case" << id << "] [str push] " << os.str() << endl;
 #endif // test
+
+        //语义检测
+        Token* E = &targ;
+
+        if (backpatch(rvar.falselist, lvar.get_name()) == ERROR)
+            return std::make_tuple(*E, "SEMANTIC ERROR::backpatch error in OR_expression in \n");
+        // return std::make_tuple(*E, "SEMANTIC ERROR::backpatch error in " + E1.value + " falselist\n");
+
+        merge(&(rvar.truelist), &(lvar.truelist), &(E->truelist));
+        E->falselist = lvar.falselist;
+
+        return std::make_tuple(*E, "None");
+
         break;
     }
     case 29:
@@ -213,9 +304,12 @@ int MidCodeParser::translate(int id, std::string name)
         os << lstr << rstr;
         auto rvar = varStackPopTest();
         auto lvar = varStackPopTest();
-        os << cmd("and", lvar, rvar, itoTempTest(tempNumTest)) << std::endl;
+
+
+        Token targ = itoTempTest(tempNumTest);
+        os << cmd("and", lvar.get_name(), rvar.get_name(), targ.get_name()) << std::endl;
         strStackTest.push(os.str());
-        varStackTest.push(itoTempTest(tempNumTest));
+        varStackTest.push(targ);
         tempNumTest++;
 #ifdef test
         cout << "[case" << id << "] [str pop] " << endl;
@@ -226,6 +320,19 @@ int MidCodeParser::translate(int id, std::string name)
         fout << "[case" << id << "] [str pop] " << endl;
         fout << "[case" << id << "] [str push] " << os.str() << endl;
 #endif // test
+
+        //语义检测
+        Token* E = &targ;
+
+        if (backpatch(rvar.falselist, lvar.get_name()) == ERROR)
+            return std::make_tuple(*E, "SEMANTIC ERROR::backpatch error in OR_expression in falselist\n");
+        // return std::make_tuple(*E, "SEMANTIC ERROR::backpatch error in " + E1.value + " falselist\n");
+
+        merge(&(rvar.truelist), &(lvar.truelist), &(E->truelist));
+        E->falselist = lvar.falselist;
+
+        return std::make_tuple(*E, "None");
+
         break;
     }
     case 31:
@@ -236,7 +343,7 @@ int MidCodeParser::translate(int id, std::string name)
         os << lstr << rstr;
         auto rvar = varStackPopTest();
         auto lvar = varStackPopTest();
-        os << cmd("==", lvar, rvar, itoTempTest(tempNumTest)) << std::endl;
+        os << cmd("==", lvar.get_name(), rvar.get_name(), itoTempTest(tempNumTest).get_name()) << std::endl;
         strStackTest.push(os.str());
         varStackTest.push(itoTempTest(tempNumTest));
         tempNumTest++;
@@ -259,7 +366,7 @@ int MidCodeParser::translate(int id, std::string name)
         os << lstr << rstr;
         auto rvar = varStackPopTest();
         auto lvar = varStackPopTest();
-        os << cmd("!=", lvar, rvar, itoTempTest(tempNumTest)) << std::endl;
+        os << cmd("!=", lvar.get_name(), rvar.get_name(), itoTempTest(tempNumTest).get_name()) << std::endl;
         strStackTest.push(os.str());
         varStackTest.push(itoTempTest(tempNumTest));
         tempNumTest++;
@@ -274,7 +381,7 @@ int MidCodeParser::translate(int id, std::string name)
 #endif // test
         break;
     }
-    case 34:
+    case 34: case 35: case 36: case 37:
     {
         auto rstr = strStackPopTest();
         auto lstr = strStackPopTest();
@@ -282,7 +389,15 @@ int MidCodeParser::translate(int id, std::string name)
         os << lstr << rstr;
         auto rvar = varStackPopTest();
         auto lvar = varStackPopTest();
-        os << cmd("<", lvar, rvar, itoTempTest(tempNumTest)) << std::endl;
+        string rop = (id==34?"<":id==35?">":id==36?"<=":">=");
+        auto temp = itoTempTest(tempNumTest);
+        os << cmd(rop, lvar.get_name(), rvar.get_name(), temp.get_name()) << std::endl;
+
+        auto E = &temp;
+        temp.quad = nextquad;
+        makelist(nextquad, &E->truelist);
+        makelist(nextquad + 1, &E->falselist);
+
         strStackTest.push(os.str());
         varStackTest.push(itoTempTest(tempNumTest));
         tempNumTest++;
@@ -297,75 +412,7 @@ int MidCodeParser::translate(int id, std::string name)
 #endif // test
         break;
     }
-    case 35:
-    {
-        auto rstr = strStackPopTest();
-        auto lstr = strStackPopTest();
-        std::ostringstream os;
-        os << lstr << rstr;
-        auto rvar = varStackPopTest();
-        auto lvar = varStackPopTest();
-        os << cmd(">", lvar, rvar, itoTempTest(tempNumTest)) << std::endl;
-        strStackTest.push(os.str());
-        varStackTest.push(itoTempTest(tempNumTest));
-        tempNumTest++;
-#ifdef test
-        cout << "[case" << id << "] [str pop] " << endl;
-        cout << "[case" << id << "] [str pop] " << endl;
-        cout << "[case" << id << "] [str push] " << os.str() << endl;
 
-        fout << "[case" << id << "] [str pop] " << endl;
-        fout << "[case" << id << "] [str pop] " << endl;
-        fout << "[case" << id << "] [str push] " << os.str() << endl;
-#endif // test
-        break;
-    }
-    case 36:
-    {
-        auto rstr = strStackPopTest();
-        auto lstr = strStackPopTest();
-        std::ostringstream os;
-        os << lstr << rstr;
-        auto rvar = varStackPopTest();
-        auto lvar = varStackPopTest();
-        os << cmd("<=", lvar, rvar, itoTempTest(tempNumTest)) << std::endl;
-        strStackTest.push(os.str());
-        varStackTest.push(itoTempTest(tempNumTest));
-        tempNumTest++;
-#ifdef test
-        cout << "[case" << id << "] [str pop] " << endl;
-        cout << "[case" << id << "] [str pop] " << endl;
-        cout << "[case" << id << "] [str push] " << os.str() << endl;
-
-        fout << "[case" << id << "] [str pop] " << endl;
-        fout << "[case" << id << "] [str pop] " << endl;
-        fout << "[case" << id << "] [str push] " << os.str() << endl;
-#endif // test
-        break;
-    }
-    case 37:
-    {
-        auto rstr = strStackPopTest();
-        auto lstr = strStackPopTest();
-        std::ostringstream os;
-        os << lstr << rstr;
-        auto rvar = varStackPopTest();
-        auto lvar = varStackPopTest();
-        os << cmd(">=", lvar, rvar, itoTempTest(tempNumTest)) << std::endl;
-        strStackTest.push(os.str());
-        varStackTest.push(itoTempTest(tempNumTest));
-        tempNumTest++;
-#ifdef test
-        cout << "[case" << id << "] [str pop] " << endl;
-        cout << "[case" << id << "] [str pop] " << endl;
-        cout << "[case" << id << "] [str push] " << os.str() << endl;
-
-        fout << "[case" << id << "] [str pop] " << endl;
-        fout << "[case" << id << "] [str pop] " << endl;
-        fout << "[case" << id << "] [str push] " << os.str() << endl;
-#endif // test
-        break;
-    }
     case 39:
     {
         auto rstr = strStackPopTest();
@@ -374,7 +421,7 @@ int MidCodeParser::translate(int id, std::string name)
         os << lstr << rstr;
         auto rvar = varStackPopTest();
         auto lvar = varStackPopTest();
-        os << cmd("+", lvar, rvar, itoTempTest(tempNumTest)) << std::endl;
+        os << cmd("+", lvar.get_name(), rvar.get_name(), itoTempTest(tempNumTest).get_name()) << std::endl;
         strStackTest.push(os.str());
         varStackTest.push(itoTempTest(tempNumTest));
         tempNumTest++;
@@ -397,7 +444,7 @@ int MidCodeParser::translate(int id, std::string name)
         os << lstr << rstr;
         auto rvar = varStackPopTest();
         auto lvar = varStackPopTest();
-        os << cmd("-", lvar, rvar, itoTempTest(tempNumTest)) << std::endl;
+        os << cmd("-", lvar.get_name(), rvar.get_name(), itoTempTest(tempNumTest).get_name()) << std::endl;
         strStackTest.push(os.str());
         varStackTest.push(itoTempTest(tempNumTest));
         tempNumTest++;
@@ -420,7 +467,7 @@ int MidCodeParser::translate(int id, std::string name)
         os << lstr << rstr;
         auto rvar = varStackPopTest();
         auto lvar = varStackPopTest();
-        os << cmd("*", lvar, rvar, itoTempTest(tempNumTest)) << std::endl;
+        os << cmd("*", lvar.get_name(), rvar.get_name(), itoTempTest(tempNumTest).get_name()) << std::endl;
         strStackTest.push(os.str());
         varStackTest.push(itoTempTest(tempNumTest));
         tempNumTest++;
@@ -443,7 +490,7 @@ int MidCodeParser::translate(int id, std::string name)
         os << lstr << rstr;
         auto rvar = varStackPopTest();
         auto lvar = varStackPopTest();
-        os << cmd("/", lvar, rvar, itoTempTest(tempNumTest)) << std::endl;
+        os << cmd("/", lvar.get_name(), rvar.get_name(), itoTempTest(tempNumTest).get_name()) << std::endl;
         strStackTest.push(os.str());
         varStackTest.push(itoTempTest(tempNumTest));
         tempNumTest++;
@@ -479,7 +526,7 @@ int MidCodeParser::translate(int id, std::string name)
 
         os << cmd(itoLabelTest(labelNumTest), "", "", "") << std::endl;
         os << lstr;
-        os << cmd("J!=", lvar, "0", itoLabelTest(labelNumTest + 1)) << std::endl;
+        os << cmd("J!=", lvar.get_name(), "0", itoLabelTest(labelNumTest + 1)) << std::endl;
         os << cmd("J", "", "", itoLabelTest(labelNumTest + 2)) << std::endl;
         os << cmd(itoLabelTest(labelNumTest + 1), "", "", "") << std::endl;
         os << rstr;
@@ -499,7 +546,7 @@ int MidCodeParser::translate(int id, std::string name)
         auto rvar = varStackPopTest();
         auto lvar = varStackPopTest();
         os << lstr;
-        os << cmd("J!=", lvar, "0", itoLabelTest(labelNumTest)) << std::endl;
+        os << cmd("J!=", lvar.get_name(), "0", itoLabelTest(labelNumTest)) << std::endl;
         os << cmd("J", "", "", itoLabelTest(labelNumTest + 1)) << std::endl;
         os << cmd(itoLabelTest(labelNumTest), "", "", "") << std::endl;;
         os << rstr;
@@ -522,7 +569,7 @@ int MidCodeParser::translate(int id, std::string name)
         auto lvar = varStackPopTest();
 
         os << lstr;
-        os << cmd("J!=", lvar, "0", itoLabelTest(labelNumTest)) << std::endl;
+        os << cmd("J!=", lvar.get_name(), "0", itoLabelTest(labelNumTest)) << std::endl;
         os << cmd("J", "", "", itoLabelTest(labelNumTest + 1)) << std::endl;
         os << cmd(itoLabelTest(labelNumTest), "", "", "") << std::endl;;
         os << midstr;
@@ -548,7 +595,7 @@ int MidCodeParser::translate(int id, std::string name)
     fout << "    strSize=[" << strStackTest.size() << "]" << endl;
     fout << endl;
 #endif // test
-    return 1;
+    return make_tuple(Token(),"None");
 }
 
 // analyze the tokens with grammar
@@ -590,6 +637,10 @@ int MidCodeParser::analyse(const std::vector<Token>& tokens)
     {
         auto I = st.top().first;
         std::string type;
+        //特殊处理{
+        if(iter->get_name()=="{"){
+            tableS.push_back(sym_tbl(std::string("level")+std::to_string(tableid++)));
+        }
         if (iter->get_type() == TokenType::ID || iter->get_type() == TokenType::CHAR
             || iter->get_type() == TokenType::INT || iter->get_type() == TokenType::FLOAT)
             type = TokenDict[iter->get_type()];
@@ -604,7 +655,7 @@ int MidCodeParser::analyse(const std::vector<Token>& tokens)
                 if (iter->get_type() == TokenType::ID || iter->get_type() == TokenType::CHAR
                     || iter->get_type() == TokenType::INT || iter->get_type() == TokenType::FLOAT)
                 {
-                    varStackTest.push(iter->get_name());
+                    varStackTest.push(*iter);
                     //cout<<"[pushVAR] "<<iter->get_name() <<"   [at line "<<iter->get_line()<<"]"<<endl;
                 }
                 st.push({ act.second, type });
@@ -651,10 +702,12 @@ int MidCodeParser::analyse(const std::vector<Token>& tokens)
                 for(auto e:right)fout<<e<<" ";
                 fout<<endl;
 #endif // test
-                if (!translate(id, iter->get_name()))
+                auto criteria = (translate(id, iter->get_name()));
+                if (std::get<1>(criteria) != "None")
                 {
-                    std::cout << "ERROR! at line " << iter->get_line() << std::endl;
-                    fout << "ERROR! at line " << iter->get_line() << std::endl;
+                    stackOut.close();
+                    stackOut.open("stack.txt", ios::out);
+                    stackOut << "at line " << iter->get_line()<< " " << std::get<1>(criteria) << "name: "<< std::get<0>(criteria).get_name() << std::endl;
                     return iter->get_line();
                 }
 

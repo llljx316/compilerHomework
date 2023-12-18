@@ -3,83 +3,62 @@
 
 #include <string>
 #include <set>
+#include "token.h"
 
-class Lexeme
+class oneToken
 {
 public:
-    std::string value; // 值
-    std::string realV; // 实际值
-    int line;         // 行号
-    int id;           // 标识符
+    TokenType type;
+    std::string name;
+    std::string value;
 
-    // 设置标识符
-    void setID(int id)
+    int offset;
+    oneToken(TokenType type, std::string name, std::string value, int offset)
     {
-        this->id = id;
-    }
-
-    // 构造函数，允许设置行号、值、实际值和标识符
-    Lexeme(int line, std::string value, std::string realV, int id)
-        : line(line), value(value), realV(realV), id(id)
-    {
-    }
-
-    // 拷贝构造函数
-    Lexeme(const Lexeme& c)
-    {
-        this->line = c.line;
-        this->value = c.value;
-        this->realV = c.realV;
-        this->id = c.id;
-    }
-
-    Lexeme(){}
+        this->name = name;
+        this->type = type;
+        this->offset = offset;
+        this->value = value;
+    };
 };
 
-class NewLexeme:public Lexeme{
+static int tempid=0;
+class sym_tbl
+{
+    std::string tblName;
+    std::string nextTblName;
+    sym_tbl* next_table;
+    std::vector<Token> syms;
 public:
-    int col;
-    int width;
-    std::string type;
-    std::string rrealv;//for a=1..
-    //control&bool properties
-    std::set<int> truelist;
-    std::set<int> falselist;
-    std::set<int> nextlist;
-    std::string quad;
-
-    // 构造函数，允许设置行号、值、实际值和标识符
-    NewLexeme(int line,int col, std::string value, std::string realV, int id)
-        : Lexeme(line,value,realV,id), col(col)
+    sym_tbl(std::string tblName )
     {
+        this->tblName = tblName;
+    }
+    void addsys(Token x)
+    {
+        syms.push_back(x);
+    }
+    void newTemp(Token& ttoken)
+    {
+        tempid++;
+        syms.push_back(ttoken);
+
+        return;
     }
 
-    NewLexeme():Lexeme(){}
 
-    // 拷贝构造函数
-    NewLexeme(const NewLexeme& c):Lexeme(c)
+    Token lookup(std::string name)
     {
-        this->width = c.width;
-        //        this->line = c.line;
-        this->col=c.col;
-        //        this->value = c.value;
-        //        this->realV = c.realV;
-        //        this->id = c.id;
-        this->type = c.type;
-        this->rrealv = c.rrealv;
-        this->falselist = c.falselist;
-        this->truelist = c.truelist;
-        this->nextlist = c.nextlist;
-        this->quad = c.quad;
+
+        for (auto ite = syms.begin(); ite != syms.end(); ite++) {
+            //std::cout << ( * ite).name << std::endl;
+            if ((*ite).name == name) {
+                return *ite;
+            }
+        }
+        return Token("None",TokenType::OTHER,-1);
     }
 
-    NewLexeme(int line,int col,int id)
-    {
-        this->col=col;
-        this->line = line;
-        this->id = id;
-    }
 };
-
 
 #endif // LEXEME_H

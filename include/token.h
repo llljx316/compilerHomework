@@ -2,6 +2,7 @@
 #define TOKEN_H
 
 #include <string>
+#include <set>
 #include "TokenType.h"
 
 class Token
@@ -37,10 +38,19 @@ public:
     void set_line(size_t line);
     size_t get_line() const;
 
-private:
+
     std::string name;
     TokenType type;
     size_t line;
+
+    std::set<int> truelist;
+    std::set<int> falselist;
+    std::set<int> nextlist;
+    int quad;
+    std::string realV;//实际值
+
+private:
+
 
 };
 

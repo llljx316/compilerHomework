@@ -3,6 +3,8 @@
 #include "lritem.h"
 #include "token.h"
 #include "parser.h"
+#include "Lexeme.h"
+#include <tuple>
 #include <vector>
 #include <string>
 #include <set>
@@ -41,8 +43,9 @@ protected:
 
 //    std::set<LR1> get_closure(const LR1& item);      // get closure
 //    void get_closure(LR1set& closure);                       // merge closure
-    int translate(int id, std::string name);
+    std::tuple<Token, std::string> translate(int id, std::string name);
 
+//    std::tuple<NewLexeme, std::string> senaticCheck(int id, std::string name);
 public:
     MidCodeParser() {}
 
