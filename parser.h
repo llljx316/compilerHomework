@@ -31,7 +31,6 @@ protected:
 
     std::set<LR1> get_closure(const LR1& item);      // get closure
     void get_closure(LR1set& closure);                       // merge closure
-    int translate(int id, std::string name);
 
 public:
     Parser() {}

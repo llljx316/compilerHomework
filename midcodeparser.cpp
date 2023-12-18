@@ -1,3 +1,4 @@
+
 #include "midcodeparser.h"
 #include "production.h"
 #include <vector>
@@ -13,7 +14,7 @@
 #define test
 
 #include <iostream>
-using namespace std;
+    using namespace std;
 
 std::stack<std::string> strStackTest;
 std::stack<std::string> varStackTest;
@@ -539,7 +540,7 @@ int MidCodeParser::analyse(const std::vector<Token>& tokens)
         auto I = st.top().first;
         std::string type;
         if (iter->get_type() == TokenType::ID || iter->get_type() == TokenType::CHAR
-                || iter->get_type() == TokenType::INT || iter->get_type() == TokenType::FLOAT)
+            || iter->get_type() == TokenType::INT || iter->get_type() == TokenType::FLOAT)
             type = TokenDict[iter->get_type()];
         else
             type = iter->get_name();
@@ -550,7 +551,7 @@ int MidCodeParser::analyse(const std::vector<Token>& tokens)
             if (act.first == "S")
             {
                 if (iter->get_type() == TokenType::ID || iter->get_type() == TokenType::CHAR
-                        || iter->get_type() == TokenType::INT || iter->get_type() == TokenType::FLOAT)
+                    || iter->get_type() == TokenType::INT || iter->get_type() == TokenType::FLOAT)
                 {
                     varStackTest.push(iter->get_name());
                     //cout<<"[pushVAR] "<<iter->get_name() <<"   [at line "<<iter->get_line()<<"]"<<endl;
@@ -580,7 +581,7 @@ int MidCodeParser::analyse(const std::vector<Token>& tokens)
                 auto newI = st.top().first;
                 st.push({ go[newI][grammar[id].get_left()],grammar[id].get_left() });
 
-                // translate
+// translate
 #ifdef test
                 cout<<"use production["<<id<<"]: "<<grammar[id].get_left()<<"->";
                 for(auto e:right)cout<<e<<" ";
