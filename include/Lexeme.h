@@ -5,29 +5,12 @@
 #include <set>
 #include "token.h"
 
-class oneToken
-{
-public:
-    TokenType type;
-    std::string name;
-    std::string value;
 
-    int offset;
-    oneToken(TokenType type, std::string name, std::string value, int offset)
-    {
-        this->name = name;
-        this->type = type;
-        this->offset = offset;
-        this->value = value;
-    };
-};
 
 static int tempid=0;
 class sym_tbl
 {
     std::string tblName;
-    std::string nextTblName;
-    sym_tbl* next_table;
     std::vector<Token> syms;
 public:
     sym_tbl(std::string tblName )

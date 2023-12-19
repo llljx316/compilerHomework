@@ -49,7 +49,6 @@ public:
     int quad;
     std::string realV;//实际值
 
-private:
 
 
 };
