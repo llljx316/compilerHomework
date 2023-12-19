@@ -149,7 +149,7 @@ std::tuple<Token, std::string> MidCodeParser::translate(int id, std::string name
         break;
     }
 
-        //[13] declaration_type -> type_specifier ID ;
+    //[13] declaration_type -> type_specifier ID ;
     case 13:
     {
         //构造符号表
@@ -157,6 +157,18 @@ std::tuple<Token, std::string> MidCodeParser::translate(int id, std::string name
         sym_tbl& topSym = tableS.back();
 
         Token t(new_sign.get_name(),new_sign.get_type(),new_sign.get_line());
+        Token res;
+        for(int i=0;i<tableS.size();++i){
+            sym_tbl& cur_t = tableS[i];
+            res = cur_t.lookup(t.get_name());
+            if(res.name != "None") break;
+        }
+        if (res.name != "None") {
+            return std::make_tuple(res,  std::string("SEMANTIC ERROR::decleared defined variable\n"));
+        }
+
+
+
         topSym.addsys(t);
 
 #ifdef test
@@ -257,6 +269,7 @@ std::tuple<Token, std::string> MidCodeParser::translate(int id, std::string name
 #endif // test
         break;
     }
+        //[27] logical_or_expression -> logical_or_expression || logical_and_expression
     case 27:
     {
         auto rstr = strStackPopTest();
@@ -537,7 +550,7 @@ std::tuple<Token, std::string> MidCodeParser::translate(int id, std::string name
         varStackTest.push(lvar);
         break;
     }
-
+//[52] selection_statement -> if ( expression ) statement
     case 52:
     {
         auto rstr = strStackPopTest();

@@ -1,6 +1,6 @@
 int main()
 {
-	// int b;
+	int b;
 	int a; /* This is a note */
 	a = 0;
 	b = 2.0+4*7;
